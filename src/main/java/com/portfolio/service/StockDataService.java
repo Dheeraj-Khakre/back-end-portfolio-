@@ -1,11 +1,10 @@
 package com.portfolio.service;
 
+import com.portfolio.dto.HistoricalPrice;
 import com.portfolio.dto.StockData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-//import org.springframework.web.reactive.function.client.WebClient;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -19,14 +18,6 @@ import java.util.Random;
 public class StockDataService {
 
     private static final Logger logger = LoggerFactory.getLogger(StockDataService.class);
-
-    @Value("${stock.api.key}")
-    private String apiKey;
-
-    @Value("${stock.api.base-url}")
-    private String baseUrl;
-
-//    private final WebClient webClient;
     private final Random random = new Random();
 
     // Mock data for demo purposes
@@ -42,27 +33,17 @@ public class StockDataService {
             "AMD", "Advanced Micro Devices Inc.",
             "INTC", "Intel Corporation"
     );
-
-//    public StockDataService() {
-//        this.webClient = WebClient.builder().build();
-//    }
-
     public StockData getStockData(String symbol) {
         try {
-            // For demo purposes, we'll use mock data instead of real API calls
-            // In production, you would uncomment the real API call below
             return getMockStockData(symbol);
-
-            // Real API call (commented out for demo)
-            // return getRealStockData(symbol);
         } catch (Exception e) {
             logger.error("Error fetching stock data for symbol: {}", symbol, e);
             return getMockStockData(symbol);
         }
     }
 
-    public List<StockData.HistoricalPrice> getHistoricalPrices(String symbol, int days) {
-        List<StockData.HistoricalPrice> prices = new ArrayList<>();
+    public List<HistoricalPrice> getHistoricalPrices(String symbol, int days) {
+        List<HistoricalPrice> prices = new ArrayList<>();
         BigDecimal basePrice = getRandomPrice();
 
         for (int i = days; i >= 0; i--) {
@@ -72,7 +53,7 @@ public class StockDataService {
             if (price.compareTo(BigDecimal.ZERO) <= 0) {
                 price = BigDecimal.valueOf(10.00);
             }
-            prices.add(new StockData.HistoricalPrice(date, price));
+            prices.add(HistoricalPrice.builder().price(price).date(date).build());
             basePrice = price;
         }
 
@@ -88,7 +69,12 @@ public class StockDataService {
         BigDecimal changePercent = changeAmount.divide(previousClose, 4, RoundingMode.HALF_UP)
                 .multiply(BigDecimal.valueOf(100));
 
-        StockData stockData = new StockData(symbol.toUpperCase(), companyName, currentPrice);
+        StockData stockData = StockData
+                .builder()
+                .currentPrice(currentPrice)
+                .companyName(companyName)
+                .symbol(symbol.toUpperCase())
+                .build();
         stockData.setPreviousClose(previousClose);
         stockData.setChangeAmount(changeAmount);
         stockData.setChangePercent(changePercent);
@@ -107,42 +93,4 @@ public class StockDataService {
                 .setScale(2, RoundingMode.HALF_UP);
     }
 
-    // Uncomment and implement for real API integration
-    /*
-    private StockData getRealStockData(String symbol) {
-        String url = baseUrl + "?function=GLOBAL_QUOTE&symbol=" + symbol + "&apikey=" + apiKey;
-
-        try {
-            Map<String, Object> response = webClient.get()
-                    .uri(url)
-                    .retrieve()
-                    .bodyToMono(Map.class)
-                    .block();
-
-            // Parse Alpha Vantage response
-            Map<String, String> quote = (Map<String, String>) response.get("Global Quote");
-
-            if (quote == null) {
-                throw new RuntimeException("Invalid response from stock API");
-            }
-
-            StockData stockData = new StockData();
-            stockData.setSymbol(quote.get("01. symbol"));
-            stockData.setCurrentPrice(new BigDecimal(quote.get("05. price")));
-            stockData.setChangeAmount(new BigDecimal(quote.get("09. change")));
-            stockData.setChangePercent(new BigDecimal(quote.get("10. change percent").replace("%", "")));
-            stockData.setOpenPrice(new BigDecimal(quote.get("02. open")));
-            stockData.setHighPrice(new BigDecimal(quote.get("03. high")));
-            stockData.setLowPrice(new BigDecimal(quote.get("04. low")));
-            stockData.setPreviousClose(new BigDecimal(quote.get("08. previous close")));
-            stockData.setVolume(Long.parseLong(quote.get("06. volume")));
-            stockData.setLastUpdated(LocalDate.parse(quote.get("07. latest trading day")));
-
-            return stockData;
-        } catch (Exception e) {
-            logger.error("Error calling stock API", e);
-            throw new RuntimeException("Failed to fetch stock data", e);
-        }
-    }
-    */
 }
