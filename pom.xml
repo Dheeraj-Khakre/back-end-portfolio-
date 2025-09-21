@@ -67,6 +67,18 @@
             <artifactId>spring-boot-starter-webflux</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-reactor</artifactId>
+            <version>2.2.0</version> <!-- check Maven Central for the latest -->
+        </dependency>
+
+        <dependency>
+            <groupId>io.github.resilience4j</groupId>
+            <artifactId>resilience4j-spring-boot3</artifactId>
+            <version>2.2.0</version>  <!-- or latest -->
+        </dependency>
+
         <!-- Testing -->
         <dependency>
             <groupId>org.springframework.boot</groupId>
