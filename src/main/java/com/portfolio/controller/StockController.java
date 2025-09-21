@@ -29,9 +29,8 @@ public class StockController {
     @GetMapping("/{symbol}")
     @CircuitBreaker(name = "stockApi", fallbackMethod = "fallbackStock")
     @Retry(name = "stockApi")
-  
     public ResponseEntity<StockData> getStockData(@PathVariable String symbol) {
-           log.info("response from Alpha Vantage for symbol {}",symbol);
+        log.info("response from Alpha Vantage for symbol {}",symbol);
         StockData stockData = stockDataAlphaService.getStockData(symbol);
         return ResponseEntity.ok(stockData);
     }
