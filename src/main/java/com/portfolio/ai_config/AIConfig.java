@@ -6,6 +6,7 @@ import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.memory.ChatMemory;
 import org.springframework.ai.chat.memory.MessageWindowChatMemory;
 import org.springframework.ai.chat.memory.repository.jdbc.JdbcChatMemoryRepository;
+import org.springframework.ai.chat.prompt.ChatOptions;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -25,6 +26,11 @@ public class AIConfig {
         MessageChatMemoryAdvisor messageChatMemoryAdvisor = MessageChatMemoryAdvisor.builder(chatMemory).build();
 
         return ChatClient.builder(cerebrasChatModel)
+                .defaultOptions(ChatOptions.builder()
+                        .model("gpt-oss-120b")
+                        .temperature(.03)
+                        .maxTokens(700)
+                        .build())
                 .build();
     }
 }
